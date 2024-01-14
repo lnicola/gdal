@@ -1,44 +1,49 @@
-# Changes
+# Changelog
 
-## Unreleased
+## [0.17.0] - Unreleased
 
-- Added `Feature::unset_field`
-  - <https://github.com/georust/gdal/pull/503>
+### Breaking
 
-- Added ability to convert between `Buffer<T>` and `ndarray::Array2<T>`.
-- Implemented `IntoIterator`, `Index` and `IndexMut` for `Buffer<T>`.
-- **Breaking**: `Buffer<T>::size` is now private and accessed via `Buffer<T>::shape().
-- **Breaking**: `Buffer<T>::data` is now private and accessed via `Buffer<T>::data().
-- **Breaking**: Removed `Rasterband::read_as_array`, changed signature of `Rasterband::read_block` to return a `Buffer<T>`.
-- **Breaking**: `Rasterband::write` and `Rasterband::write_block` now require a `&mut Buffer<T>` to handle possible case of drivers temporarily mutating input buffer.
+- `Buffer<T>::size` is now private and accessed via `Buffer<T>::shape().
+- `Buffer<T>::data` is now private and accessed via `Buffer<T>::data().
+- Removed `Rasterband::read_as_array`, changed signature of `Rasterband::read_block` to return a `Buffer<T>`.
+- `Rasterband::write` and `Rasterband::write_block` now require a `&mut Buffer<T>` to handle possible case of drivers temporarily mutating input buffer.
 
    - <https://github.com/georust/gdal/pull/494>
 
-- Implemented `Feature::set_field_null`
-
-  - <https://github.com/georust/gdal/pull/501>
-  - <https://github.com/georust/gdal/pull/502>
-
-- **Breaking**: Changed a number of APIs using `isize` when `usize` is semantically more appropriate: `Driver::create.*`, `Rasterband::overview`, `Dataset::{layer|into_layer|layer_count}`.
+- Changed a number of APIs using `isize` when `usize` is semantically more appropriate: `Driver::create.*`, `Rasterband::overview`, `Dataset::{layer|into_layer|layer_count}`.
 
   - <https://github.com/georust/gdal/pull/497>
 
-- Created `enum AxisMappingStrategy` for `OSRAxisMappingStrategy` ordinals.
-- **Breaking**: `SpatialRef::{set_}axis_mapping_strategy` use `AxisMappingStrategy` instead of `gdal_sys::OSRAxisMappingStrategy::Type`.
+- `SpatialRef::{set_}axis_mapping_strategy` use `AxisMappingStrategy` instead of `gdal_sys::OSRAxisMappingStrategy::Type`.
 
    - <https://github.com/georust/gdal/pull/498>
 
-- Defers the `gdal_i.lib` missing message until after the `pkg-config` check and outputs `pkg-config` metadata in case of a static build.
+- Replaced `TryFrom<&[(&str, &str); N]> for CslStringList` with `impl FromIterator<CslStringListEntry> for CslStringList`, `impl FromIterator<String> for CslStringList` and `impl<'a> FromIterator<&'a str> for CslStringList`
 
-   - <https://github.com/georust/gdal/pull/492>
+- `SpatialRef::set_axis_mapping_strategy` now takes `&mut self`
 
-- Added `RasterBand::write_block`.
+   - <https://github.com/georust/gdal/pull/461>
 
-   - <https://github.com/georust/gdal/pull/490>
+- `Dataset::raster_count` now returns an `usize` and `Dataset::rasterband` now takes `usize` instead of `isize`
 
-- `RasterBand::read_block` now checks that the requested type matches the band type.
+   - <https://github.com/georust/gdal/pull/434>
 
-   - <https://github.com/georust/gdal/pull/489>
+- `CslStringListIterator` returns a `CslStringListEntry` instead of `(String, String)` in order to differentiate between `key=value` entries vs `flag` entries.
+- `CslStringList::fetch_name_value` returns `Option<String>` instead of `Result<Option<String>>`, better reflecting the semantics of GDAL C API.
+- Added `CslStringList::get_field`, `CslStringList::find_string`, `CslStringList::partial_find_string`, `CslStringList::find_string_case_sensitive`, `CslStringList::into_ptr`, `CslStringList::add_name_value`.
+
+   - <https://github.com/georust/gdal/pull/455>
+
+- `ExtendedDataType` no longer implements `Clone`, `PartialEq` and `Eq`
+
+  - <https://github.com/georust/gdal/pull/451>
+
+- Moved `LayerIterator`, `LayerOptions` and `Transaction` to `crate::vector`
+
+  - <https://github.com/georust/gdal/pull/447>
+
+### Added
 
 - Added `Geometry::difference`.
 
@@ -57,46 +62,52 @@
 
    - <https://github.com/georust/gdal/pull/462>
 
-- **Breaking**: Replaced `TryFrom<&[(&str, &str); N]> for CslStringList` with `impl FromIterator<CslStringListEntry> for CslStringList`, `impl FromIterator<String> for CslStringList` and `impl<'a> FromIterator<&'a str> for CslStringList`
 - Added `Extend<CslStringListEntry> for CslStringList`, and `CslStringList::merge`
 
   - <https://github.com/georust/gdal/pull/457>
 
-- **Breaking**: `SpatialRef::set_axis_mapping_strategy` now takes `&mut self`
+- Added ability to convert between `Buffer<T>` and `ndarray::Array2<T>`.
 
-   - <https://github.com/georust/gdal/pull/461>
+- Implemented `IntoIterator`, `Index` and `IndexMut` for `Buffer<T>`.
 
-- **Breaking**: `Dataset::raster_count` now returns an `usize` and `Dataset::rasterband` now takes `usize` instead of `isize`
+- Implemented `Feature::set_field_null`
 
-   - <https://github.com/georust/gdal/pull/434>
+  - <https://github.com/georust/gdal/pull/501>
+  - <https://github.com/georust/gdal/pull/502>
 
-- **Breaking**: `CslStringListIterator` returns a `CslStringListEntry` instead of `(String, String)` in order to differentiate between `key=value` entries vs `flag` entries.
-- **Breaking**: `CslStringList::fetch_name_value` returns `Option<String>` instead of `Result<Option<String>>`, better reflecting the semantics of GDAL C API.
-- Added `CslStringList::get_field`, `CslStringList::find_string`, `CslStringList::partial_find_string`, `CslStringList::find_string_case_sensitive`, `CslStringList::into_ptr`, `CslStringList::add_name_value`.
+- Added `RasterBand::write_block`.
 
-   - <https://github.com/georust/gdal/pull/455>
-
-- **Breaking**: `ExtendedDataType` no longer implements `Clone`, `PartialEq` and `Eq`
-
-  - <https://github.com/georust/gdal/pull/451>
-
-- **Breaking**: Moved `LayerIterator`, `LayerOptions` and `Transaction` to `crate::vector`
-
-  - <https://github.com/georust/gdal/pull/447>
-
-- Accessors `MajorObject::gdal_object_ptr` and `Dataset::c_dataset()` are no longer marked as `unsafe` (only using these is unsafe in idiomatic Rust)
-
-   - <https://github.com/georust/gdal/pull/447>
-
-- Fixed build script error with development GDAL versions
-
-  - <https://github.com/georust/gdal/pull/439>
+   - <https://github.com/georust/gdal/pull/490>
 
 - Added raster histogram methods (setter and getter)
 
   - Getter: <https://github.com/georust/gdal/pull/468>
   - Setter: <https://github.com/georust/gdal/pull/486>
 
+- Added `Feature::unset_field`
+  - <https://github.com/georust/gdal/pull/503>
+
+- Created `enum AxisMappingStrategy` for `OSRAxisMappingStrategy` ordinals.
+
+### Fixed
+
+- `RasterBand::read_block` now checks that the requested type matches the band type.
+
+   - <https://github.com/georust/gdal/pull/489>
+
+- Fixed build script error with development GDAL versions
+
+  - <https://github.com/georust/gdal/pull/439>
+
+### Changed
+
+- Accessors `MajorObject::gdal_object_ptr` and `Dataset::c_dataset()` are no longer marked as `unsafe` (only using these is unsafe in idiomatic Rust)
+
+   - <https://github.com/georust/gdal/pull/447>
+
+- Defers the `gdal_i.lib` missing message until after the `pkg-config` check and outputs `pkg-config` metadata in case of a static build.
+
+   - <https://github.com/georust/gdal/pull/492>
 
 ## 0.16
 
