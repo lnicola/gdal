@@ -4,14 +4,14 @@
 
 ### Breaking
 
-- `Buffer<T>::size` is now private and accessed via `Buffer<T>::shape().
-- `Buffer<T>::data` is now private and accessed via `Buffer<T>::data().
+- `Buffer<T>::size` is now private and accessed via `Buffer<T>::shape()`.
+- `Buffer<T>::data` is now private and accessed via `Buffer<T>::data()`.
 - Removed `Rasterband::read_as_array`, changed signature of `Rasterband::read_block` to return a `Buffer<T>`.
-- `Rasterband::write` and `Rasterband::write_block` now require a `&mut Buffer<T>` to handle possible case of drivers temporarily mutating input buffer.
+- `Rasterband::write` and `Rasterband::write_block` now take `&mut Buffer<T>` to handle drivers mutating the input buffer.
 
    - <https://github.com/georust/gdal/pull/494>
 
-- Changed a number of APIs using `isize` when `usize` is semantically more appropriate: `Driver::create.*`, `Rasterband::overview`, `Dataset::{layer|into_layer|layer_count}`.
+- `Driver::{create,create_with_band_type,create_with_band_type_with_options}`, `Rasterband::overview`, `Dataset::{layer,into_layer,layer_count}` take `usize` instead of `isize`
 
   - <https://github.com/georust/gdal/pull/497>
 
