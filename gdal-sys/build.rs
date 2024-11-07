@@ -23,7 +23,10 @@ pub fn write_bindings(include_paths: Vec<String>, out_path: &Path) {
         .allowlist_function("OGR.*")
         .allowlist_function("OSR.*")
         .allowlist_function("OCT.*")
-        .allowlist_function("VSI.*");
+        .allowlist_function("VSI.*")
+        .opaque_type("FILE")
+        .opaque_type("tm")
+        .opaque_type("VSIStatBuf");
 
     for path in include_paths {
         builder = builder
