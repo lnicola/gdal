@@ -18,22 +18,19 @@ These steps assume that there are no fundamental changes to the gdal build syste
 # Generating Binding
 
 ```bash
-docker run -it --rm -v ./gdal-sys:/gdal_sys ghcr.io/osgeo/gdal:ubuntu-full-$GDAL_VERSION /bash
+docker run -it --rm -v ./gdal-sys:/gdal_sys ghcr.io/osgeo/gdal:ubuntu-full-$GDAL_VERSION bash
 # everything from now on is inside of the container
 
-# install minimal rust version
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal --component rustfmt -y
-. "$HOME/.cargo/env"
-
+export GDAL_VERSION=3_4 # or anything else
 # install mingw toolchain for generating windows bindings
 # install libclang for bindgen
-# gcc as linker
 # gcc-i686-linux-gnu to generate bindings for 32 bit linux
 apt update
-apt install -y libclang-dev mingw-w64 gcc gcc-i686-linux-gnu pkg-config 
+apt install -y libclang-dev mingw-w64 gcc-i686-linux-gnu pkg-config rustfmt
 
 # install bindgen
-cargo install bindgen-cli
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rust-lang/rust-bindgen/releases/download/v0.70.1/bindgen-cli-installer.sh | sh
+source $HOME/.cargo/env
 
 # create the output directory for the prebuild bindings if necessary
 mkdir -p /gdal_sys/prebuilt-bindings/$GDAL_VERSION/

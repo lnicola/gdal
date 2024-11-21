@@ -257,7 +257,7 @@ fn main() {
                 ),
             };
             let binding_path = PathBuf::from(format!(
-                "prebuilt-bindings/{}.{}/{binding_name}",
+                "prebuilt-bindings/{}_{}/{binding_name}",
                 version.major, version.minor,
             ));
 
