@@ -82,17 +82,7 @@ fn main() {
             version.major * 1_000_000 + version.minor * 10_000 + version.patch * 100;
         println!("cargo:version_number={}", gdal_version_number_string);
 
-        let binding_path = PathBuf::from(format!(
-            "prebuilt-bindings/gdal_{}_{}.rs",
-            version.major, version.minor
-        ));
-
-        if !binding_path.exists() {
-            panic!("Missing bindings for docs.rs (version {})", version);
-        }
-
-        std::fs::copy(&binding_path, &out_path).expect("Can't copy bindings to output directory");
-
+        copy_prebuilt_bindings(version, &out_path);
         return;
     }
 
@@ -242,31 +232,7 @@ fn main() {
                 "cargo:rustc-cfg=gdal_sys_{}_{}_{}",
                 version.major, version.minor, version.patch
             );
-            let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("Set by cargo");
-            let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
-            let ptr_size = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
-
-            let binding_name = match (target_arch.as_str(), ptr_size.as_str(), is_windows) {
-                ("x86_64" | "aarch64", "64", false) => "gdal_x86_64-unknown-linux-gnu.rs",
-                ("x86_64", "64", true) => "gdal_x86_64-pc-windows-gnu.rs",
-                ("x86" | "arm", "32", false) => "gdal_i686-unknown-linux-gnu.rs",
-                ("x86", "32", true) => "gdal_i686-pc-windows-gnu.rs",
-                _ => panic!(
-                    "No pre-built bindings available for target: {} ptr_size: {} is_windows: {}",
-                    target_arch, ptr_size, is_windows
-                ),
-            };
-            let binding_path = PathBuf::from(format!(
-                "prebuilt-bindings/{}_{}/{binding_name}",
-                version.major, version.minor,
-            ));
-
-            if !binding_path.exists() {
-                panic!("No pre-built bindings available for GDAL version {}.{}. Enable the `bindgen` feature of the `gdal` or `gdal-sys` crate to generate them during build.", version.major, version.minor);
-            }
-
-            std::fs::copy(&binding_path, &out_path)
-                .expect("Can't copy bindings to output directory");
+            copy_prebuilt_bindings(version, &out_path);
         } else if let Err(pkg_config_err) = &gdal_pkg_config {
             // Special case output for this common error
             if matches!(pkg_config_err, pkg_config::Error::Command { cause, .. } if cause.kind() == std::io::ErrorKind::NotFound)
@@ -279,4 +245,31 @@ fn main() {
             panic!("No GDAL version detected");
         }
     }
+}
+
+fn copy_prebuilt_bindings(version: Version, out_path: &Path) {
+    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("Set by cargo");
+    let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
+    let ptr_size = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
+
+    let binding_name = match (target_arch.as_str(), ptr_size.as_str(), is_windows) {
+        ("x86_64" | "aarch64", "64", false) => "gdal_x86_64-unknown-linux-gnu.rs",
+        ("x86_64", "64", true) => "gdal_x86_64-pc-windows-gnu.rs",
+        ("x86" | "arm", "32", false) => "gdal_i686-unknown-linux-gnu.rs",
+        ("x86", "32", true) => "gdal_i686-pc-windows-gnu.rs",
+        _ => panic!(
+            "No pre-built bindings available for target: {} ptr_size: {} is_windows: {}",
+            target_arch, ptr_size, is_windows
+        ),
+    };
+    let binding_path = PathBuf::from(format!(
+        "prebuilt-bindings/{}_{}/{binding_name}",
+        version.major, version.minor,
+    ));
+
+    if !binding_path.exists() {
+        panic!("No pre-built bindings available for GDAL version {}.{}. Enable the `bindgen` feature of the `gdal` or `gdal-sys` crate to generate them during build.", version.major, version.minor);
+    }
+
+    std::fs::copy(&binding_path, &out_path).expect("Can't copy bindings to output directory");
 }
